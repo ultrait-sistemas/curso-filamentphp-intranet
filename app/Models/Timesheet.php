@@ -6,6 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Timesheet extends Model
 {
+    protected $fillable = [
+        'calendar_id',
+        'user_id',
+        'type',
+        'day_in',
+        'day_out',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
