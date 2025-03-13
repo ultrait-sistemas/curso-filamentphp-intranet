@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Personal\Resources;
 
-use App\Filament\Resources\HolidayResource\Pages;
-use App\Filament\Resources\HolidayResource\RelationManagers;
+use App\Filament\Personal\Resources\HolidayResource\Pages;
+use App\Filament\Personal\Resources\HolidayResource\RelationManagers;
 use App\Models\Calendar;
 use App\Models\Holiday;
 use App\Models\User;
@@ -15,6 +15,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class HolidayResource extends Resource
 {
@@ -31,19 +32,7 @@ class HolidayResource extends Resource
                     ->options(Calendar::all()->pluck('name','id'))
                     ->searchable()
                     ->required(),
-                Forms\Components\Select::make('user_id')
-                    ->label('User')
-                    ->options(User::all()->pluck('name','id'))
-                    ->searchable()
-                    ->required(),
                 Forms\Components\DatePicker::make('day')
-                    ->required(),
-                Forms\Components\Select::make('type')
-                    ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'declined' => 'Declined',
-                    ])
                     ->required(),
             ]);
     }
@@ -63,13 +52,13 @@ class HolidayResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('type')
-                ->badge()
-                ->color(fn (string $state): string => match ($state) {
-                    'pending' => 'gray',
-                    'approved' => 'success',
-                    'declined' => 'danger',
-                })
-                ->searchable(),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'gray',
+                        'approved' => 'success',
+                        'declined' => 'danger',
+                    })
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -112,5 +101,10 @@ class HolidayResource extends Resource
             'create' => Pages\CreateHoliday::route('/create'),
             'edit' => Pages\EditHoliday::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where('user_id', Auth::user()->id);
     }
 }

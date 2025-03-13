@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Personal\Resources;
 
-use App\Filament\Resources\HolidayResource\Pages;
-use App\Filament\Resources\HolidayResource\RelationManagers;
+use App\Filament\Personal\Resources\TimesheetResource\Pages;
+use App\Filament\Personal\Resources\TimesheetResource\RelationManagers;
 use App\Models\Calendar;
-use App\Models\Holiday;
+use App\Models\Timesheet;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -15,10 +15,11 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
-class HolidayResource extends Resource
+class TimesheetResource extends Resource
 {
-    protected static ?string $model = Holiday::class;
+    protected static ?string $model = Timesheet::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -31,19 +32,15 @@ class HolidayResource extends Resource
                     ->options(Calendar::all()->pluck('name','id'))
                     ->searchable()
                     ->required(),
-                Forms\Components\Select::make('user_id')
-                    ->label('User')
-                    ->options(User::all()->pluck('name','id'))
-                    ->searchable()
-                    ->required(),
-                Forms\Components\DatePicker::make('day')
-                    ->required(),
                 Forms\Components\Select::make('type')
                     ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'declined' => 'Declined',
+                        'work' => 'work',
+                        'pause' => 'pause',
                     ])
+                    ->required(),
+                Forms\Components\DateTimePicker::make('day_in')
+                    ->required(),
+                Forms\Components\DateTimePicker::make('day_out')
                     ->required(),
             ]);
     }
@@ -58,38 +55,42 @@ class HolidayResource extends Resource
                 Tables\Columns\TextColumn::make('user.name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('day')
-                    ->date()
+                Tables\Columns\TextColumn::make('type')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'work' => 'success',
+                        'pause' => 'warning',
+                    })
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('day_in')
+                    ->dateTime()
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('type')
-                ->badge()
-                ->color(fn (string $state): string => match ($state) {
-                    'pending' => 'gray',
-                    'approved' => 'success',
-                    'declined' => 'danger',
-                })
-                ->searchable(),
+                Tables\Columns\TextColumn::make('day_out')
+                    ->dateTime()
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
+                    ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('type')
                     ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'declined' => 'Declined',
+                        'work' => 'Working',
+                        'pause' => 'Paused',
                     ])
             ])
             ->actions([
-                Tables\Actions\DeleteAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -108,9 +109,14 @@ class HolidayResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListHolidays::route('/'),
-            'create' => Pages\CreateHoliday::route('/create'),
-            'edit' => Pages\EditHoliday::route('/{record}/edit'),
+            'index' => Pages\ListTimesheets::route('/'),
+            'create' => Pages\CreateTimesheet::route('/create'),
+            'edit' => Pages\EditTimesheet::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where('user_id', Auth::user()->id);
     }
 }
