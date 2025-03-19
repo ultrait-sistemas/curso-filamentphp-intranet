@@ -3,8 +3,15 @@
 namespace App\Filament\Resources\HolidayResource\Pages;
 
 use App\Filament\Resources\HolidayResource;
+use App\Mail\HolidayApproved;
+use App\Mail\HolidayDeclined;
+use App\Mail\HolidayPending;
+use App\Models\User;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Mail;
+
 
 class EditHoliday extends EditRecord
 {
@@ -15,5 +22,30 @@ class EditHoliday extends EditRecord
         return [
             Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $record->update($data);
+        //dd($record, $data);
+
+        $user = User::find($data['user_id']);
+        $dataToSend = array(
+            'day' => $data['day'],
+            'name' => $user->name,
+            'email' => $user->email,
+        );
+        if($data['type'] == 'approved') {
+            Mail::to($user)->send(new HolidayApproved($dataToSend));
+        } elseif($data['type'] == 'declined') {
+            Mail::to($user)->send(new HolidayDeclined($dataToSend));
+        }
+
+        return $record;
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }
