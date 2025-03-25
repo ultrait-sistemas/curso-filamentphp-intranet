@@ -18,6 +18,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Shanerbaner82\PanelRoles\PanelRoles;
 
 class PersonalPanelProvider extends PanelProvider
 {
@@ -60,6 +61,10 @@ class PersonalPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-            ]);
+            ])            
+            ->plugin(PanelRoles::make()
+                ->roleToAssign('panel_user')
+                ->restrictedRoles(['panel_user','super_admin']),
+            );
     }
 }

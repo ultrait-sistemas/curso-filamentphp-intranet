@@ -162,10 +162,10 @@ class RoleResource extends Resource implements HasShieldPermissions
 
     public static function shouldRegisterNavigation(): bool
     {
-        $user = User::find(Auth::user()->id);
-
-        //return Utils::isResourceNavigationRegistered();
-        return Utils::isResourceNavigationRegistered() && $user->hasRole('super_admin');
+        // $user = User::find(Auth::user()->id);
+// 
+        // return Utils::isResourceNavigationRegistered() && $user->hasRole('super_admin');
+        return Utils::isResourceNavigationRegistered();
     }
 
     public static function canViewAny(): bool

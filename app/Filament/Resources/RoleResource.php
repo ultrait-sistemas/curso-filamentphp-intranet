@@ -162,15 +162,15 @@ class RoleResource extends Resource implements HasShieldPermissions
 
     public static function shouldRegisterNavigation(): bool
     {
-        $panel = Filament::getCurrentPanel();
-        $user = User::find(Auth::user()->id);
-
-        if ($panel && $panel->getId() === 'personal') {
-            return false;
-        }
-        
-        //return Utils::isResourceNavigationRegistered();
-        return Utils::isResourceNavigationRegistered() && $user->hasRole('super_admin');
+        // $panel = Filament::getCurrentPanel();
+        // $user = User::find(Auth::user()->id);
+// 
+        // if ($panel && $panel->getId() === 'personal') {
+        //     return false;
+        // }
+        // 
+        // return Utils::isResourceNavigationRegistered() && $user->hasRole('super_admin');
+        return Utils::isResourceNavigationRegistered();
     }
 
     public static function getNavigationGroup(): ?string
