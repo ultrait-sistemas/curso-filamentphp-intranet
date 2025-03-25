@@ -7,6 +7,7 @@ use App\Filament\Personal\Resources\TimesheetResource\RelationManagers;
 use App\Models\Calendar;
 use App\Models\Timesheet;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -17,12 +18,24 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
-class TimesheetResource extends Resource
+class TimesheetResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Timesheet::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clock';
 
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+        ];
+    }
+    
     public static function form(Form $form): Form
     {
         return $form

@@ -82,6 +82,11 @@ class UserResource extends Resource
                             ->required(),
                         Forms\Components\TextInput::make('postal_code')
                             ->required(),
+                        Forms\Components\Select::make('roles')
+                            ->relationship('roles', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->searchable(),
                     ]),
         ]);
     }
@@ -95,6 +100,8 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('roles.name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('address')
                     ->sortable()

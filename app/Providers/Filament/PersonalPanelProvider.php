@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -20,6 +21,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class PersonalPanelProvider extends PanelProvider
 {
+    use HasPanelShield;
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -54,6 +57,9 @@ class PersonalPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->databaseNotifications();
+            ->databaseNotifications()
+            ->plugins([
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+            ]);
     }
 }
