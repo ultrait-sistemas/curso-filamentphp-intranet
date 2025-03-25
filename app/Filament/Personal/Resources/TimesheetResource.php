@@ -17,6 +17,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class TimesheetResource extends Resource implements HasShieldPermissions
 {
@@ -65,9 +67,6 @@ class TimesheetResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('calendar.name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('user.name')
-                    ->searchable()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('type')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -108,6 +107,10 @@ class TimesheetResource extends Resource implements HasShieldPermissions
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    ExportBulkAction::make()->exports([
+                        ExcelExport::make('table')->fromTable()->withFilename('Timesheets_' . date('Y-m-d') . '_table'),
+                        ExcelExport::make('form')->fromForm()->withFilename('Timesheets_' . date('Y-m-d') . '_form'),
+                    ]),
                 ]),
             ]);
     }
@@ -130,6 +133,6 @@ class TimesheetResource extends Resource implements HasShieldPermissions
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('user_id', Auth::user()->id)->orderBy('id','desc');
+        return parent::getEloquentQuery()->where('user_id', Auth::user()->id)->orderBy('day_in','desc');
     }
 }

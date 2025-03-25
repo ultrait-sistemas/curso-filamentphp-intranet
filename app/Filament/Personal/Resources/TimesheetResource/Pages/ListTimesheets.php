@@ -3,8 +3,10 @@
 namespace App\Filament\Personal\Resources\TimesheetResource\Pages;
 
 use App\Filament\Personal\Resources\TimesheetResource;
+use App\Imports\MyTimesheetImport;
 use App\Models\Timesheet;
 use Carbon\Carbon;
+use EightyNine\ExcelImport\ExcelImportAction;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -17,7 +19,7 @@ class ListTimesheets extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        $lastTimesheet = Timesheet::where('user_id', Auth::user()->id)->orderBy('id','desc')->first();
+        $lastTimesheet = Timesheet::where('user_id', Auth::user()->id)->orderBy('day_in','desc')->first();
         return [
             Action::make('inWork')
                 ->label('Entrar a Trabajar')
@@ -103,8 +105,11 @@ class ListTimesheets extends ListRecords
                         ->color('info')
                         ->send();
                 }),
-            Actions\CreateAction::make(),
-        ];
+                ExcelImportAction::make()
+                    ->color("primary")
+                    ->use(MyTimesheetImport::class),
+                Actions\CreateAction::make(),
+            ];
     }
 
 }
