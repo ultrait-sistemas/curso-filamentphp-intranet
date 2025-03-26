@@ -1,0 +1,104 @@
+sudo apt install git php php-mbstring php-xml php-bcmath php-curl php-mysql php-cli zip unzip php-intl php-gd php-zip
+
+
+
+curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php
+
+sudo php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+sudo apt install mysql-server
+CREATE USER 'filamentphp'@'localhost' IDENTIFIED BY 'M05tSecur3Pas5';
+GRANT ALL PRIVILEGES ON *.* TO 'filamentphp'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+exit;
+
+
+-- Clonar el proyecto y generar .env
+git clone https://github.com/ultrait-sistemas/curso-filamentphp-intranet.git
+cd curso-filamentphp-intranet/
+cp .env.example .env
+editar .env y colocar los parametros de conexion a la base de datos
+rm -fr composer.lock package-lock.json
+
+
+composer install
+php artisan key:generate
+
+sudo ufw status
+sudo ufw allow 8000/tcp
+
+-- ejecutar seeders
+hp artisan db:seed
+
+composer require laravel/octane
+php artisan octane:install
+
+vi .env
+OCTANE_SERVER=roadrunner
+
+php artisan octane:start --server=roadrunner --host=0.0.0.0 --port=8000
+
+php artisan icons:cache
+
+sudo nano /etc/systemd/system/octane.service
+####################################################
+[Unit]
+Description=Laravel Octane Server
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/ruta/a/tu/proyecto
+ExecStart=/usr/bin/php /ruta/a/tu/proyecto/artisan octane:start --server=roadrunner --host=0.0.0.0 --port=8000
+Restart=always
+RestartSec=5
+StandardOutput=append:/ruta/a/tu/proyecto/storage/logs/octane.log
+StandardError=append:/ruta/a/tu/proyecto/storage/logs/octane_error.log
+
+[Install]
+WantedBy=multi-user.target
+####################################################
+
+
+
+Reemplaza /ruta/a/tu/proyecto con la ruta real de tu proyecto.
+User=www-data usa el usuario de Apache/Nginx. Si lo corres con otro usuario, cámbialo
+
+-- para habilitar y arrancar el servicio
+sudo systemctl daemon-reload
+sudo systemctl enable octane
+sudo systemctl start octane
+
+
+-- para ver estado de octane
+sudo systemctl status octane
+
+
+-- para ver logs
+tail -f /ruta/a/tu/proyecto/storage/logs/octane.log
+tail -f /ruta/a/tu/proyecto/storage/logs/octane_error.log
+
+
+-- Para reiniciar octane
+sudo systemctl restart octane
+
+
+#################################################
+Opiniones
+---------
+
+🏆 ¿Cuál es más rápido?
+🚀 Más rápido en general: Nginx + RoadRunner, porque Nginx maneja SSL y proxy más eficientemente.
+
+Si tienes tráfico bajo o interno: RoadRunner con HTTPS es más directo y rápido.
+
+Si usas Apache por compatibilidad: Puedes configurarlo como proxy, pero Nginx es mejor en rendimiento.
+
+🔹 Apache es más pesado porque maneja cada solicitud con un proceso separado, mientras que Nginx es más eficiente con eventos asincrónicos.
+
+🚀 Conclusión:
+✅ Para máxima velocidad y eficiencia → RoadRunner + Nginx
+✅ Si ya usas Apache y no puedes cambiar → Apache como proxy (pero no es lo ideal)
+✅ Si el servidor tiene pocos recursos → Evita Apache, usa Nginx
+
+Si puedes, evita Apache y usa Nginx para mejorar el rendimiento de tu aplicación con Laravel Octane.
