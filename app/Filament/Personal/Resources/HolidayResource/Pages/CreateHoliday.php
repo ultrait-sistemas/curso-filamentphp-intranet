@@ -19,7 +19,7 @@ class CreateHoliday extends CreateRecord
     {
         $data['user_id'] = Auth::user()->id;
         $data['type'] = 'pending';
-        $userAdmin = User::find(1);
+        $userAdmin = User::find(2);
 
         $employee = User::find($data['user_id']);
         $dataToSend = array(
